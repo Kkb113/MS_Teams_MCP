@@ -496,6 +496,8 @@ async def set_status_message(message: str) -> dict:
 
 if __name__ == "__main__":
     import uvicorn
+    from starlette.middleware import Middleware
+    from starlette.middleware.trustedhost import TrustedHostMiddleware
 
     transport = os.environ.get("MCP_TRANSPORT", "sse")
     host = os.environ.get("HOST", "0.0.0.0")
@@ -504,7 +506,7 @@ if __name__ == "__main__":
     if transport == "stdio":
         mcp.run(transport="stdio")
     else:
-        # Get the SSE ASGI/Starlette app from FastMCP and run it with uvicorn
-        # so Render can detect the open port reliably.
         app = mcp.sse_app()
-        uvicorn.run(app, host=host, port=port)
+        # Allow all hosts — required when running behind Render's reverse proxy
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+        uvicorn.run(app, host=host, port=port, proxy_headers=True, forwarded_allow_ips="*")
