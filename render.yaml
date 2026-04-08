@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: teams-mcp
+    runtime: docker
+    plan: free
+    envVars:
+      - key: MS_CLIENT_ID
+        sync: false
+      - key: MS_TENANT_ID
+        sync: false
+      - key: MCP_TRANSPORT
+        value: sse
+      - key: PORT
+        value: "8000"
