@@ -124,10 +124,7 @@ def _pick(data: dict, keys: list[str]) -> dict:
 # MCP Server
 # ---------------------------------------------------------------------------
 
-mcp = FastMCP(
-    "Microsoft Teams",
-    description="Manage Microsoft Teams chats, channels, and calendar events.",
-)
+mcp = FastMCP("Microsoft Teams")
 
 # ---- Profile ---------------------------------------------------------------
 
@@ -498,6 +495,8 @@ async def set_status_message(message: str) -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    import uvicorn
+
     transport = os.environ.get("MCP_TRANSPORT", "sse")
     host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", "8000"))
@@ -505,4 +504,7 @@ if __name__ == "__main__":
     if transport == "stdio":
         mcp.run(transport="stdio")
     else:
-        mcp.run(transport="sse", host=host, port=port)
+        # Get the SSE ASGI/Starlette app from FastMCP and run it with uvicorn
+        # so Render can detect the open port reliably.
+        app = mcp.sse_app()
+        uvicorn.run(app, host=host, port=port)
